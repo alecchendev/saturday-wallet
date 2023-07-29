@@ -21,7 +21,7 @@ const isYesterday = (date: Date) => {
   return date.toLocaleDateString() == yesterday.toLocaleDateString();
 }
 
-const App: Component = () => {
+const Activity: Component = () => {
 
   const [balanceSats, setBalanceSats] = createSignal(25_000);
   const [activityItems, setActivityItems] = createSignal([
@@ -36,7 +36,7 @@ const App: Component = () => {
     <div>
       <ActivityTopBar />
       <Balance balanceSats={balanceSats()} />
-      <Activity activityItems={activityItems()} />
+      <ActivityLog activityItems={activityItems()} />
     </div>
   );
 };
@@ -48,7 +48,7 @@ type ActivityItemModel = {
   amount: number,
 }
 
-const Activity: Component<{activityItems: Array<ActivityItemModel>}> = (props) => {
+const ActivityLog: Component<{activityItems: Array<ActivityItemModel>}> = (props) => {
   return (
     <div class="px-5">
       <h2 class="text-xl font-medium pb-3">Activity</h2>
@@ -140,4 +140,4 @@ const ActivityTopBar: Component = () => {
   )
 }
 
-export default App;
+export default Activity;
