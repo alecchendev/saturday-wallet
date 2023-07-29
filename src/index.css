@@ -8,3 +8,7 @@ a, input, button
 {
     touch-action: manipulation;
 }
+
+* {
+    box-sizing: border-box;
+}
