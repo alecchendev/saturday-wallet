@@ -6,19 +6,18 @@ import VisibleIcon from './icons/visible.svg';
 import ArrowUpIcon from './icons/arrow-up.svg';
 import ArrowDownIcon from './icons/arrow-down.svg';
 
-const today = new Date();
 const price = 29_000;
 
-const getYesterday = () => {
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  return yesterday;
+enum PaymentType {
+  Sent,
+  Received,
 }
 
-const isYesterday = (date: Date) => {
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  return date.toLocaleDateString() == yesterday.toLocaleDateString();
+type ActivityItemModel = {
+  paymentType: PaymentType,
+  pending: boolean,
+  date: Date,
+  amount: number,
 }
 
 const Activity: Component = () => {
@@ -33,7 +32,7 @@ const Activity: Component = () => {
   ]);
 
   return (
-    <div>
+    <div class="flex flex-col">
       <ActivityTopBar />
       <Balance balanceSats={balanceSats()} />
       <ActivityLog activityItems={activityItems()} />
@@ -41,11 +40,29 @@ const Activity: Component = () => {
   );
 };
 
-type ActivityItemModel = {
-  paymentType: PaymentType,
-  pending: boolean,
-  date: Date,
-  amount: number,
+const ActivityTopBar: Component = () => {
+  return (
+    <div class="flex justify-between items-center w-full h-12 px-3">
+      <GraphIcon class="w-7" />
+      <SearchIcon class="w-7" />
+    </div>
+  )
+}
+
+const Balance: Component<{balanceSats: number}> = (props) => {
+
+  const balanceFiat = () => props.balanceSats * price / 100_000_000;
+
+  return (
+    <div class="flex flex-col justify-center items-center gap-y-1 h-40">
+      <div class="flex">
+        <h4 class="text-gray-500 font-medium">Your balance</h4>
+        <VisibleIcon class="w-5 ml-1" />
+      </div>
+      <h2 class="text-3xl">{props.balanceSats.toLocaleString()} sats</h2>
+      <h3 class="text-xl">{balanceFiat().toLocaleString("en-US", { maximumFractionDigits: 2 })} $</h3>
+    </div>
+  )
 }
 
 const ActivityLog: Component<{activityItems: Array<ActivityItemModel>}> = (props) => {
@@ -64,11 +81,6 @@ const ActivityLog: Component<{activityItems: Array<ActivityItemModel>}> = (props
       </For>
     </div>
   )
-}
-
-enum PaymentType {
-  Sent,
-  Received,
 }
 
 const ActivityItem: Component<{paymentType: PaymentType, pending: boolean, date: Date, amount: number}> = (props) => {
@@ -115,29 +127,16 @@ const ArrowCircle: Component<{direction: ArrowDirection, pending: boolean}> = (p
   )
 }
 
-const Balance: Component<{balanceSats: number}> = (props) => {
-
-  const balanceFiat = createMemo(() => props.balanceSats * price / 100_000_000);
-
-  return (
-    <div class="flex flex-col justify-center items-center gap-y-1 h-40">
-      <div class="flex">
-        <h4 class="text-gray-500 font-medium">Your balance</h4>
-        <VisibleIcon class="w-5 ml-1" />
-      </div>
-      <h2 class="text-3xl">{props.balanceSats.toLocaleString()} sats</h2>
-      <h3 class="text-xl">{balanceFiat().toLocaleString()} $</h3>
-    </div>
-  )
+const getYesterday = () => {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return yesterday;
 }
 
-const ActivityTopBar: Component = () => {
-  return (
-    <div class="flex justify-between items-center w-full h-12 px-3">
-      <GraphIcon class="w-7" />
-      <SearchIcon class="w-7" />
-    </div>
-  )
+const isYesterday = (date: Date) => {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return date.toLocaleDateString() == yesterday.toLocaleDateString();
 }
 
 export default Activity;
