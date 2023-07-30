@@ -1,22 +1,31 @@
-import type { Component, JSX } from 'solid-js';
+import type { Component } from 'solid-js';
+import { createResource } from 'solid-js';
 import { Router, Route, Routes, A } from "@solidjs/router";
+import { invoke } from "@tauri-apps/api";
 
-import GearIcon from './icons/gear.svg';
-import PaymentsIcon from './icons/flip-vertical.svg';
-import TransactionsIcon from './icons/transactions.svg';
+import GearIcon from "./icons/gear.svg";
+import PaymentsIcon from "./icons/flip-vertical.svg";
+import TransactionsIcon from "./icons/transactions.svg";
 
-import Payments from './Payments';
-import Activity from './Activity';
-import Settings from './Settings';
+import Payments from "./Payments";
+import Activity from "./Activity";
+import Settings from "./Settings";
+
+const fetchBalance = async (): Promise<number> => {
+  return await invoke("get_balance", {});
+}
 
 const App: Component = () => {
+
+  const [balance] = createResource(fetchBalance);
+
   return (
     <Router>
         <div class="flex flex-col justify-between h-screen">
           <Routes>
-            <Route path="/payments" component={Payments} />
-            <Route path="/" component={Activity} />
-            <Route path="/settings" component={Settings} />
+            <Route path="/payments" element={<Payments />} />
+            <Route path="/" element={<Activity balanceSats={balance()} />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
           <NavigationBar />
         </div>

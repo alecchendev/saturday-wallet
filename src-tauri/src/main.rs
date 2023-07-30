@@ -6,6 +6,7 @@ use ldk_node::bitcoin::Network;
 use ldk_node::io::SqliteStore;
 use ldk_node::lightning_invoice::Invoice;
 use ldk_node::{Builder, Config, NetAddress, Node};
+use tauri::State;
 use std::str::FromStr;
 
 mod rpc;
@@ -15,7 +16,16 @@ fn greet(name: &str) -> String {
     format!("Hello, {}!", name)
 }
 
-struct AppState {
+#[tauri::command]
+fn get_balance(app: State<App>) -> u64 {
+    // Spendable onchain balance...?
+    println!("Getting balance...");
+    let onchain_balance = app.node.total_onchain_balance_sats().unwrap();
+    let lightning_balance = app.node.list_channels().iter().map(|channel| channel.outbound_capacity_msat).sum::<u64>() / 1000;
+    onchain_balance + lightning_balance
+}
+
+struct App {
     node: Node<SqliteStore>,
 }
 
@@ -39,8 +49,8 @@ fn main() {
     );
 
     tauri::Builder::default()
-        .manage(AppState { node })
-        .invoke_handler(tauri::generate_handler![greet])
+        .manage(App { node })
+        .invoke_handler(tauri::generate_handler![greet, get_balance])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

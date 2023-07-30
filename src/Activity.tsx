@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { createSignal, createMemo, For, Show, Match, Switch } from 'solid-js';
+import { createSignal, createMemo, For, Show, Match, Switch, Suspense } from 'solid-js';
 import GraphIcon from './icons/graph.svg';
 import SearchIcon from './icons/search.svg';
 import VisibleIcon from './icons/visible.svg';
@@ -20,9 +20,8 @@ type ActivityItemModel = {
   amount: number,
 }
 
-const Activity: Component = () => {
+const Activity: Component<{balanceSats: number}> = (props) => {
 
-  const [balanceSats, setBalanceSats] = createSignal(25_000);
   const [activityItems, setActivityItems] = createSignal([
     {paymentType: PaymentType.Sent, pending: true, date: new Date(), amount: 21_763},
     {paymentType: PaymentType.Sent, pending: false, date: getYesterday(), amount: 128_021},
@@ -34,7 +33,7 @@ const Activity: Component = () => {
   return (
     <div class="flex flex-col">
       <ActivityTopBar />
-      <Balance balanceSats={balanceSats()} />
+      <Balance balanceSats={props.balanceSats} />
       <ActivityLog activityItems={activityItems()} />
     </div>
   );
@@ -49,7 +48,7 @@ const ActivityTopBar: Component = () => {
   )
 }
 
-const Balance: Component<{balanceSats: number}> = (props) => {
+const Balance: Component<{balanceSats?: number}> = (props) => {
 
   const balanceFiat = () => props.balanceSats * price / 100_000_000;
 
@@ -59,8 +58,10 @@ const Balance: Component<{balanceSats: number}> = (props) => {
         <h4 class="text-gray-500 font-medium">Your balance</h4>
         <VisibleIcon class="w-5 ml-1" />
       </div>
-      <h2 class="text-3xl">{props.balanceSats.toLocaleString()} sats</h2>
-      <h3 class="text-xl">{balanceFiat().toLocaleString("en-US", { maximumFractionDigits: 2 })} $</h3>
+      <Show when={props.balanceSats} fallback={"Loading..."}>
+        <h2 class="text-3xl">{props.balanceSats.toLocaleString()} sats</h2>
+        <h3 class="text-xl">${balanceFiat().toLocaleString("en-US", { maximumFractionDigits: 2 })}</h3>
+      </Show>
     </div>
   )
 }
