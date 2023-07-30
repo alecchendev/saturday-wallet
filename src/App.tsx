@@ -9,23 +9,31 @@ import PaymentsIcon from "./icons/flip-vertical.svg";
 import TransactionsIcon from "./icons/transactions.svg";
 
 import Payments from "./Payments";
-import Activity from "./Activity";
+import Activity, { ActivityItemModel, PaymentStatus, PaymentDirection } from "./Activity";
 import Settings from "./Settings";
 
 const fetchBalance = async (): Promise<number> => {
   return await invoke("get_balance", {});
 }
 
+const fetchPayments = async (): Promise<Array<ActivityItemModel>> => {
+  let payments: Array<[number, number, number]> = await invoke("get_payments", {});
+  return payments.map(([amountMsat, direction, status]: [number, number, number]) => {
+    return { amountMsat, direction: direction as PaymentDirection, status: status as PaymentStatus, date: new Date() };
+  });
+}
+
 const App: Component = () => {
 
   const [balance] = createResource(fetchBalance);
+  const [activityItems] = createResource(fetchPayments);
 
   return (
     <Router>
         <div class="flex flex-col justify-between h-screen">
           <Routes>
             <Route path="/payments" element={<Payments />} />
-            <Route path="/" element={<Activity balanceSats={balance()} />} />
+            <Route path="/" element={<Activity balanceSats={balance()} activityItems={activityItems()} />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
           <NavigationBar />

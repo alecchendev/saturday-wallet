@@ -1,4 +1,4 @@
-use bitcoincore_rpc::{Auth, Client, RpcApi, bitcoin::Network};
+use bitcoincore_rpc::{bitcoin::Network, Auth, Client};
 
 // Default datadir relative to home directory
 #[cfg(target_os = "windows")]
