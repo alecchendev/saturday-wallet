@@ -38,7 +38,7 @@ const Amount: Component<{amountSats: number}> = (props) => {
   const subtitle = () => props.amountSats === 0 ? "Enter amount" : amountFiat().toLocaleString("en-US", { maximumFractionDigits: 2 }) + " $";
 
   return (
-    <div class="flex flex-col justify-center items-center gap-y-2 h-40 my-24">
+    <div class="flex flex-col justify-center items-center gap-y-2 h-40 my-20">
       <h2 class="text-5xl">{props.amountSats.toLocaleString()} sats</h2>
       <div class="flex">
         <h3 class="font-light text-2xl text-gray-500">{subtitle}</h3>
