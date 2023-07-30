@@ -28,7 +28,7 @@ export type ActivityItemModel = {
 
 const Activity: Component<{balanceSats: number, activityItems: ActivityItemModel[]}> = (props) => {
   return (
-    <div class="flex flex-col">
+    <div class="flex flex-col overflow-y-scroll">
       <ActivityTopBar />
       <Balance balanceSats={props.balanceSats} />
       <ActivityLog activityItems={props.activityItems} />
@@ -57,7 +57,7 @@ const Balance: Component<{balanceSats?: number}> = (props) => {
       </div>
       <Show when={props.balanceSats} fallback={"Loading..."}>
         <h2 class="text-3xl">{props.balanceSats.toLocaleString()} sats</h2>
-        <h3 class="text-xl">${balanceFiat().toLocaleString("en-US", { maximumFractionDigits: 2 })}</h3>
+        <h3 class="text-xl font-light text-gray-500">${balanceFiat().toLocaleString("en-US", { maximumFractionDigits: 2 })}</h3>
       </Show>
     </div>
   )
@@ -96,6 +96,9 @@ const ActivityItem: Component<{payment: ActivityItemModel}> = (props) => {
   const amountSats = createMemo(() => props.payment.amountMsat / 1000);
   const amountFiat = createMemo(() => amountSats() * price / 100_000_000);
 
+  const amountSatsStr = () => plusMinus + amountSats().toLocaleString() + " sats";
+  const amountFiatStr = () => plusMinus + "$" + amountFiat().toLocaleString("en-US", { maximumFractionDigits: 2 });
+
   return (
     <div class="flex justify-between items-center py-3.5">
       <div class="flex items-center">
@@ -103,8 +106,8 @@ const ActivityItem: Component<{payment: ActivityItemModel}> = (props) => {
         <p class={descriptionColor}>{description}</p>
       </div>
       <div class="flex flex-col text-right">
-        <p class={`text-sm ${amountColor}`}>{plusMinus}{amountSats().toLocaleString()} sats</p>
-        <p class="text-sm font-light text-gray-500">{plusMinus}{amountFiat().toLocaleString()} $</p>
+        <p class={`text-sm ${amountColor}`}>{amountSatsStr}</p>
+        <p class="text-sm font-light text-gray-500">{amountFiatStr}</p>
       </div>
     </div>
   )
