@@ -1,7 +1,20 @@
 import { Component, For, createSignal } from "solid-js";
+import { invoke } from "@tauri-apps/api";
 import ContactsIcon from './icons/contacts.svg';
 import FlipVerticalIcon from './icons/flip-vertical.svg';
 import QrCodeIcon from './icons/qr-code.svg';
+import toast from "solid-toast";
+
+const fetchInvoice = async (amountMsat: number): Promise<string> => {
+  return await invoke("get_invoice", {amountMsat, description: "", expirySecs: 15 * 60});
+}
+
+const copyInvoice = async (amountSats: number) => {
+  let amountMsat = amountSats * 1000;
+  let invoice = await fetchInvoice(amountMsat);
+  navigator.clipboard.writeText(invoice);
+  toast.success("Invoice copied to clipboard", {position: "top-center"});
+}
 
 const Payments: Component = () => {
   const [amountSats, setAmountSats] = createSignal(0);
@@ -18,7 +31,7 @@ const Payments: Component = () => {
       <PaymentsTopBar />
       <Amount amountSats={amountSats()}/>
       <NumberPad pushDigit={pushDigit} popDigit={popDigit} />
-      <ButtonBar />
+      <ButtonBar handleRequest={() => copyInvoice(amountSats())} />
     </div>
   );
 }
@@ -76,12 +89,12 @@ const NumberPadButton: Component<{text: string, handleClick: Function}> = (props
   );
 }
 
-const ButtonBar: Component = () => {
+const ButtonBar: Component<{handleRequest: Function}> = (props) => {
   const buttonStyles = "flex justify-center items-center rounded-md bg-orange-400 text-white text-lg";
   const rectangleStyles = "w-2/5 h-12";
   return (
     <div class="flex justify-between mt-4 px-8">
-      <button class={`${buttonStyles} ${rectangleStyles}`}>Request</button>
+      <button class={`${buttonStyles} ${rectangleStyles}`} onClick={() => props.handleRequest()} >Request</button>
       <button class={`${buttonStyles} w-12 h-12`}><QrCodeIcon class="w-9"/></button>
       <button class={`${buttonStyles} ${rectangleStyles}`}>Pay</button>
     </div>

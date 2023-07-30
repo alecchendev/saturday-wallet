@@ -17,11 +17,15 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
+fn get_invoice(app: State<App>, amount_msat: u64, description: &str, expiry_secs: u32) -> String {
+    let invoice = app.node.receive_payment(amount_msat, description, expiry_secs).unwrap();
+    format!("{}", invoice)
+}
+
+#[tauri::command]
 fn get_balance(app: State<App>) -> u64 {
-    // Spendable onchain balance...?
-    println!("Getting balance...");
     let onchain_balance = app.node.total_onchain_balance_sats().unwrap();
-    let lightning_balance = app.node.list_channels().iter().map(|channel| channel.outbound_capacity_msat).sum::<u64>() / 1000;
+    let lightning_balance = app.node.list_channels().iter().map(|channel| channel.balance_msat).sum::<u64>() / 1000;
     onchain_balance + lightning_balance
 }
 
@@ -50,7 +54,7 @@ fn main() {
 
     tauri::Builder::default()
         .manage(App { node })
-        .invoke_handler(tauri::generate_handler![greet, get_balance])
+        .invoke_handler(tauri::generate_handler![greet, get_balance, get_invoice])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

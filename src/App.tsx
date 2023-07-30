@@ -2,6 +2,7 @@ import type { Component } from 'solid-js';
 import { createResource } from 'solid-js';
 import { Router, Route, Routes, A } from "@solidjs/router";
 import { invoke } from "@tauri-apps/api";
+import { Toaster } from "solid-toast";
 
 import GearIcon from "./icons/gear.svg";
 import PaymentsIcon from "./icons/flip-vertical.svg";
@@ -28,6 +29,7 @@ const App: Component = () => {
             <Route path="/settings" element={<Settings />} />
           </Routes>
           <NavigationBar />
+          <Toaster />
         </div>
     </Router>
   );
