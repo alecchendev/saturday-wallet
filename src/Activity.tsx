@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { createSignal, createMemo, For, Show, Match, Switch, Suspense, createResource } from 'solid-js';
+import { createMemo, For, Show, Match, Switch } from 'solid-js';
 import GraphIcon from './icons/graph.svg';
 import SearchIcon from './icons/search.svg';
 import VisibleIcon from './icons/visible.svg';
@@ -28,7 +28,7 @@ export type ActivityItemModel = {
 
 const Activity: Component<{balanceSats: number, activityItems: ActivityItemModel[]}> = (props) => {
   return (
-    <div class="flex flex-col overflow-y-scroll">
+    <div class="overflow-y-auto">
       <ActivityTopBar />
       <Balance balanceSats={props.balanceSats} />
       <ActivityLog activityItems={props.activityItems} />
@@ -106,8 +106,8 @@ const ActivityItem: Component<{payment: ActivityItemModel}> = (props) => {
         <p class={descriptionColor}>{description}</p>
       </div>
       <div class="flex flex-col text-right">
-        <p class={`text-sm ${amountColor}`}>{amountSatsStr}</p>
-        <p class="text-sm font-light text-gray-500">{amountFiatStr}</p>
+        <p class={`text-sm ${amountColor}`}>{amountSatsStr()}</p>
+        <p class="text-sm font-light text-gray-500">{amountFiatStr()}</p>
       </div>
     </div>
   )
