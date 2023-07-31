@@ -1,19 +1,32 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use ldk_node::bitcoin::secp256k1::PublicKey;
 use ldk_node::bitcoin::Network;
 use ldk_node::io::SqliteStore;
-use ldk_node::lightning::util::ser::Writeable;
+use ldk_node::lightning_invoice::Invoice;
 use ldk_node::{Builder, Config, NetAddress, Node};
-use serde::Serialize;
 use tauri::State;
 use std::str::FromStr;
 
 mod rpc;
 
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}!", name)
+fn pay_invoice(app: State<App>, invoice: &str) -> Result<[u8; 32], ()> {
+    let invoice = Invoice::from_str(invoice).unwrap();
+    match app.node.send_payment(&invoice) {
+        Ok(payment_hash) => Ok(payment_hash.0),
+        Err(_) => Err(()),
+    }
+}
+
+#[tauri::command]
+fn pay_spontaneous(app: State<App>, amount_msat: u64, node_id: &str) -> Result<[u8; 32], ()> {
+    let node_id = PublicKey::from_str(node_id).unwrap();
+    match app.node.send_spontaneous_payment(amount_msat, node_id) {
+        Ok(payment_hash) => Ok(payment_hash.0),
+        Err(_) => Err(()),
+    }
 }
 
 #[tauri::command]
@@ -69,7 +82,7 @@ fn main() {
 
     tauri::Builder::default()
         .manage(App { node })
-        .invoke_handler(tauri::generate_handler![greet, get_balance, get_invoice, get_payments])
+        .invoke_handler(tauri::generate_handler![get_balance, get_invoice, get_payments, pay_invoice, pay_spontaneous])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

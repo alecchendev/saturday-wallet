@@ -37,7 +37,7 @@ const App: Component = () => {
             <Route path="/settings" element={<Settings />} />
           </Routes>
           <NavigationBar />
-          <Toaster />
+          <Toaster position={"top-center"} />
         </div>
     </Router>
   );

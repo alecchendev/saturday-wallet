@@ -5,6 +5,35 @@ import FlipVerticalIcon from './icons/flip-vertical.svg';
 import QrCodeIcon from './icons/qr-code.svg';
 import toast from "solid-toast";
 
+const payInvoice = async (invoice: string): Promise<Array<number>> => {
+  return await invoke("pay_invoice", {invoice});
+}
+
+const scanAndPayInvoice = async () => {
+  let invoice = await navigator.clipboard.readText();
+  try {
+    await payInvoice(invoice);
+    toast.success("Sent");
+  } catch (e) {
+    toast.error("Failed");
+  }
+}
+
+const paySpontaneous = async (amountMsat: number, nodeId: string) => {
+  await invoke("pay_spontaneous", {amountMsat, nodeId});
+}
+
+const pasteAndPaySpontaneous = async (amountSats: number) => {
+  let nodeId = await navigator.clipboard.readText();
+  let amountMsat = amountSats * 1000;
+  try {
+    await paySpontaneous(amountMsat, nodeId);
+    toast.success("Sent");
+  } catch (e) {
+    toast.error("Failed");
+  }
+}
+
 const fetchInvoice = async (amountMsat: number): Promise<string> => {
   return await invoke("get_invoice", {amountMsat, description: "", expirySecs: 15 * 60});
 }
@@ -13,7 +42,7 @@ const copyInvoice = async (amountSats: number) => {
   let amountMsat = amountSats * 1000;
   let invoice = await fetchInvoice(amountMsat);
   navigator.clipboard.writeText(invoice);
-  toast.success("Invoice copied to clipboard", {position: "top-center"});
+  toast.success("Invoice copied to clipboard");
 }
 
 const Payments: Component = () => {
@@ -31,7 +60,7 @@ const Payments: Component = () => {
       <PaymentsTopBar />
       <Amount amountSats={amountSats()}/>
       <NumberPad pushDigit={pushDigit} popDigit={popDigit} />
-      <ButtonBar handleRequest={() => copyInvoice(amountSats())} />
+      <ButtonBar handleRequest={() => copyInvoice(amountSats())} handleScan={() => scanAndPayInvoice()} handlePay={() => pasteAndPaySpontaneous(amountSats())} />
     </div>
   );
 }
@@ -89,14 +118,14 @@ const NumberPadButton: Component<{text: string, handleClick: Function}> = (props
   );
 }
 
-const ButtonBar: Component<{handleRequest: Function}> = (props) => {
+const ButtonBar: Component<{handleRequest: Function, handleScan: Function, handlePay: Function}> = (props) => {
   const buttonStyles = "flex justify-center items-center rounded-md bg-orange-400 text-white text-lg";
   const rectangleStyles = "w-2/5 h-12";
   return (
     <div class="flex justify-between mt-4 px-8">
       <button class={`${buttonStyles} ${rectangleStyles}`} onClick={() => props.handleRequest()} >Request</button>
-      <button class={`${buttonStyles} w-12 h-12`}><QrCodeIcon class="w-9"/></button>
-      <button class={`${buttonStyles} ${rectangleStyles}`}>Pay</button>
+      <button class={`${buttonStyles} w-12 h-12`} onClick={() => props.handleScan()}><QrCodeIcon class="w-9"/></button>
+      <button class={`${buttonStyles} ${rectangleStyles}`} onClick={() => props.handlePay()}>Pay</button>
     </div>
   );
 }
